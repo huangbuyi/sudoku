@@ -154,6 +154,13 @@ function playable() {
   return gameState.value === GameState.Playing || gameState.value === GameState.Ready;
 }
 
+window.addEventListener('beforeunload', (e: Event) => {
+  if (gameState.value === GameState.Playing) {
+    e.preventDefault();
+    return '游戏已经开始，确定要离开此页面吗？';
+  }
+});
+
 </script>
 
 <template>
