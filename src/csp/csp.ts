@@ -1,4 +1,5 @@
 import { Puzzle, PUZZLE_LEN, PuzzleCoord } from '../puzzles/puzzles';
+import { chooseCoords } from '../utils';
 import { consistent } from './sudoku';
 
 export function resolveCsp(puzzle: Puzzle) {
@@ -9,6 +10,48 @@ export function resolveCsp(puzzle: Puzzle) {
   const assignment = new Assignment(puzzle);
   const res = backtrack(assignment);
   return res;
+}
+
+export function genPuzzle(numOfGiven: number) {
+  const puzzle: Puzzle = new Array(PUZZLE_LEN);
+  for (let r = 0; r < PUZZLE_LEN; r++) {
+    puzzle[r] = new Array(PUZZLE_LEN);
+    for (let c = 0; c < PUZZLE_LEN; c++) {
+      puzzle[r][c] = { value: undefined, given: false };
+    }
+  }
+
+  const assignment = genCsp();
+  const randomCoords = chooseCoords(PUZZLE_LEN, PUZZLE_LEN, numOfGiven);
+
+  for (let i = 0; i < numOfGiven; i++) {
+    const [r, c] = randomCoords[i];
+    puzzle[r][c].value = assignment.values[r][c];
+    puzzle[r][c].given = true;
+  }
+
+  return puzzle;
+}
+
+function genCsp() {
+  const puzzle: Puzzle = new Array(PUZZLE_LEN);
+  for (let r = 0; r < PUZZLE_LEN; r++) {
+    puzzle[r] = new Array(PUZZLE_LEN);
+    for (let c = 0; c < PUZZLE_LEN; c++) {
+      puzzle[r][c] = { value: undefined, given: false };
+    }
+  }
+
+  const randomCoords = chooseCoords(PUZZLE_LEN, PUZZLE_LEN, 9);
+
+  for (let i = 0; i < 9; i++) {
+    const [r, c] = randomCoords[i];
+    puzzle[r][c].value = i + 1;
+  }
+
+  const assignment = new Assignment(puzzle);
+  const res = backtrack(assignment);
+  return res!;
 }
 
 function backtrack(assignment: Assignment): Assignment | null {
@@ -169,8 +212,8 @@ class DomainValues {
   }
 }
 
+// select MPV(Minimum Remaining Values) variable
 function selectUnassignedVar(assignment: Assignment): PuzzleCoord | null {
-  // select MPV(Minimum Remaining Values) variable
   let mpv = PUZZLE_LEN;
   let mpvVar: PuzzleCoord | null = null;
 

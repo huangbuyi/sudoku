@@ -1,20 +1,33 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
-import { loadPuzzle, Puzzle, PUZZLE_LEN } from './puzzles/puzzles'
+import { reactive, ref } from 'vue';
+import { Puzzle, PUZZLE_LEN } from './puzzles/puzzles'
 import GameBaord from './game/GameBoard.vue';
-import { resolveCsp } from './csp/csp';
+import { genPuzzle, resolveCsp } from './csp/csp';
 import { consistent } from './csp/sudoku';
-import { GameState } from './game/game';
+import { GameDifficulty, GameMode, GameState, getClueNumRange } from './game/game';
+import MsTimer from './timer/MsTimer.vue';
 
 const gameboard = ref<typeof GameBaord>();
-const gameState = ref<GameState>(GameState.Loading);
+const timer = ref<typeof MsTimer>();
+const gameState = ref<GameState>(GameState.Ready);
 const puzzle = ref<Puzzle | null>(null);
-const loading = ref(false);
 const usedTip = ref(false);
 const startTime = ref<number>(0);
 const score = ref<number>(0);
+const difficulty = ref<GameDifficulty>(GameDifficulty.Easy);
+const mode = ref<GameMode>(GameMode.Casual);
+const difficultyOptions = [
+  [ '简单', GameDifficulty.Easy ],
+  [ '普通', GameDifficulty.Medium ],
+  [ '困难', GameDifficulty.Hard ],
+  [ '专家', GameDifficulty.Expert ]
+];
+const modeOptions = [
+  [ '休闲', GameMode.Casual ],
+  [ '挑战', GameMode.Challenge ]
+];
 
-loadData();
+startGame();
 
 function clearBoard() {
   if (window.confirm('确认清空全部已填入的数值吗？')) {
@@ -70,28 +83,42 @@ function showSolution() {
   usedTip.value = true;
 }
 
-async function loadData() {
-  loading.value = true;
-  gameState.value = GameState.Loading;
-  const data = await loadPuzzle('./puzzles/1.txt');
-  startGame(data);
-}
 
-function startGame(puzzleData: Puzzle) {
+function startGame() {
+  if (gameState.value === GameState.Playing) {
+    if (!window.confirm('确认要重新开始吗？')) {
+      return;
+    }
+  }
+
+  const puzzleData = genPuzzle(getClueNum(difficulty.value));
   puzzle.value = reactive(puzzleData);
   gameState.value = GameState.Ready;
   usedTip.value = false;
   startTime.value = new Date().getTime();
   score.value = 0;
+  gameboard.value?.clear();
+
+  timer.value?.stop();
+  if (mode.value === GameMode.Challenge) {
+    timer.value?.start();
+  }
+}
+
+function getClueNum(difficulty: GameDifficulty) {
+  const [min, max] = getClueNumRange(difficulty);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function onGameBoardInput() {
+  gameState.value = GameState.Playing;
   if (checkWin()) {
     settlement();
   }
 }
 
 function settlement() {
+  timer.value?.stop();
   gameState.value = GameState.Won;
   const endTime = new Date().getTime();
   const time = endTime - startTime.value;
@@ -139,14 +166,34 @@ function playable() {
             <img v-for="_ in score" class="win-icon" src="/images/star.png" />
           </div>
           <span>You Win!</span>
-          <button class="startGame">再来一局</button>
+          <button class="startGame" @click="startGame">再来一局</button>
         </div>
       </div>
     </main>
     <footer>
-      <button @click="clearBoard" :disabled="!playable()">清空</button>
-      <button @click="showSolution" :disabled="!playable()">提示全部</button>
-      <button @click="showTip" :disabled="!playable()">提示</button>
+      <div class="tip-buttons">
+        <button @click="clearBoard" :disabled="!playable()">清空</button>
+        <button v-if="mode === GameMode.Casual" @click="showSolution" :disabled="!playable()">提示全部</button>
+        <button v-if="mode === GameMode.Casual" @click="showTip" :disabled="!playable()">提示</button>
+      </div>
+      <div class="game-setting">
+        <div class="setting-item">
+          <label>难度</label>
+          <select v-model="difficulty">
+            <option v-for="[label, value] in difficultyOptions" :value="value">{{ label }}</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>模式</label>
+          <select v-model="mode">
+            <option v-for="[label, value] in modeOptions" :value="value">{{ label }}</option>
+          </select>
+        </div>
+        <div v-show="mode === GameMode.Challenge" class="timer">
+          <MsTimer ref="timer" />
+        </div>
+        <button @click="startGame">重新开始</button>
+      </div>
     </footer>
   </div>
 </template>
@@ -193,7 +240,7 @@ main {
 
 footer {
   flex: none;
-  height: 36px;
+  height: 45px;
   border-top: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
@@ -201,6 +248,38 @@ footer {
 }
 
 footer button {
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.tip-buttons button {
   margin-left: 8px;
+}
+
+.game-setting {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.setting-item {
+  margin-right: 14px;
+}
+
+.setting-item label {
+  margin-right: 4px;
+}
+
+.game-setting select {
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.game-setting button {
+  margin-right: 8px;
+}
+
+.timer {
+  margin-right: 8px;
 }
 </style>
