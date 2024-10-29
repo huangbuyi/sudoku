@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Puzzle, PUZZLE_LEN, PuzzleCell } from '../puzzles/puzzles';
 import CellInput from './CellInput.vue';
 import { checkInconsistent } from '../csp/sudoku';
 
 const props = defineProps<{
-  puzzle: Puzzle
+  puzzle: Puzzle,
+  readonly?: boolean
 }>();
+const emit = defineEmits(['input']);
 const focusedCell = ref<PuzzleCell | null>(null);
 const inconsistentMap = ref<boolean[][] | null>(null);
 defineExpose({
@@ -25,14 +27,19 @@ defineExpose({
   }
 });
 
+watch(() => props.readonly, (readonly) => {
+  if (readonly) {
+    focusedCell.value = null;
+  }
+})
+
 function onInput(cell: PuzzleCell, value: number | undefined) {
   if (value !== cell.value) {
     cell.value = value;
     inconsistentMap.value = checkInconsistent(props.puzzle);
+    emit('input', cell, value);
   }
 }
-
-
 
 </script>
 
@@ -48,7 +55,7 @@ function onInput(cell: PuzzleCell, value: number | undefined) {
           'is-given': cell.given,
           'is-inconsistent': inconsistentMap && inconsistentMap[i][j],
         }"
-        @focus="focusedCell = cell"
+        @focus="focusedCell = readonly ? null : cell"
       >
         <CellInput
           v-if="focusedCell === cell"
@@ -64,9 +71,10 @@ function onInput(cell: PuzzleCell, value: number | undefined) {
 
 <style scoped>
 .game-board {
-  --border-color: #ccc;
+  width: fit-content;
   color: #424242;
   user-select: none;
+  --border-color: #ccc;
 }
 
 .board-row {
