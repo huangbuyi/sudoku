@@ -9,7 +9,7 @@
     "difficulty": "Difficulty",
     "mode": "Mode"
   },
-  "difficulty": {
+  "difficulties": {
     "easy": "Easy",
     "medium": "Medium",
     "hard": "Hard",
