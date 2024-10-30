@@ -230,6 +230,7 @@ main {
   flex-flow: column;
   align-items: center;
   padding: 16px;
+  overflow: auto;
 }
 
 .result-board {
