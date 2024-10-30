@@ -1,0 +1,29 @@
+{
+  "buttons": {
+    "clear": "清空",
+    "showSolution": "提示全部",
+    "showTip": "提示",
+    "restart": "重新开始"
+  },
+  "labels": {
+    "difficulty": "难度",
+    "mode": "模式"
+  },
+  "difficulties": {
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难",
+    "expert": "专家"
+  },
+  "modes": {
+    "casual": "休闲",
+    "challenge": "挑战"
+  },
+  "messages": {
+    "clear": "确认清空全部已填入的数值吗？",
+    "onSolution": "无解，试着调整已填入的数值，或清空后再查看提示。",
+    "showSolution": "确认要查看全部答案吗？",
+    "restart": "确认要重新开始吗？",
+    "unload": "游戏已经开始，确定要离开此页面吗？"
+  }
+}

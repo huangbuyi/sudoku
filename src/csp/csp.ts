@@ -44,6 +44,11 @@ function genCsp() {
 
   const randomCoords = chooseCoords(PUZZLE_LEN, PUZZLE_LEN, 9);
 
+  /**
+   * 随机选择九个各自，赋值1~9。
+   * 该步骤能有效减少搜索空间，加快生成速度。
+   * https://www.sudokuwiki.org/Sudoku_Creation_and_Grading.pdf
+   */
   for (let i = 0; i < 9; i++) {
     const [r, c] = randomCoords[i];
     puzzle[r][c].value = i + 1;

@@ -1,0 +1,29 @@
+{
+  "buttons": {
+    "clear": "Clear",
+    "showSolution": "All Hints",
+    "showTip": "Hint",
+    "restart": "Restart"
+  },
+  "labels": {
+    "difficulty": "Difficulty",
+    "mode": "Mode"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "expert": "Expert"
+  },
+  "modes": {
+    "casual": "Casual",
+    "challenge": "Challenge"
+  },
+  "messages": {
+    "clear": "Are you sure you want to clear all entered values?",
+    "onSolution": "No solution found. Try adjusting the entered values or clear them and check the tips again",
+    "showSolution": "Are you sure you want to view all hints?",
+    "restart": "Are you sure you want to start over?",
+    "unload": "The game has already started. Are you sure you want to leave this page?"
+  }
+}

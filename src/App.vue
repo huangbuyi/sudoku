@@ -6,6 +6,9 @@ import { genPuzzle, resolveCsp } from './csp/csp';
 import { consistent } from './csp/sudoku';
 import { GameDifficulty, GameMode, GameState, getClueNumRange } from './game/game';
 import MsTimer from './timer/MsTimer.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const gameboard = ref<typeof GameBaord>();
 const timer = ref<typeof MsTimer>();
@@ -17,20 +20,20 @@ const score = ref<number>(0);
 const difficulty = ref<GameDifficulty>(GameDifficulty.Easy);
 const mode = ref<GameMode>(GameMode.Casual);
 const difficultyOptions = [
-  [ '简单', GameDifficulty.Easy ],
-  [ '普通', GameDifficulty.Medium ],
-  [ '困难', GameDifficulty.Hard ],
-  [ '专家', GameDifficulty.Expert ]
+  [ t('difficulties.easy'), GameDifficulty.Easy ],
+  [ t('difficulties.medium'), GameDifficulty.Medium ],
+  [ t('difficulties.hard'), GameDifficulty.Hard ],
+  [ t('difficulties.expert'), GameDifficulty.Expert ]
 ];
 const modeOptions = [
-  [ '休闲', GameMode.Casual ],
-  [ '挑战', GameMode.Challenge ]
+  [ t('modes.casual'), GameMode.Casual ],
+  [ t('modes.challenge'), GameMode.Challenge ]
 ];
 
 startGame();
 
 function clearBoard() {
-  if (window.confirm('确认清空全部已填入的数值吗？')) {
+  if (window.confirm(t('messages.clear'))) {
     gameboard.value?.clear();
   }
 }
@@ -51,7 +54,7 @@ function showTip() {
     }
 
   } else {
-    alert('无解，试着调整已填入的数值，或清空后再查看提示');
+    alert(t('messages.onSolution'));
   }
 
   usedTip.value = true;
@@ -63,7 +66,7 @@ function showSolution() {
     return;
   }
 
-  if (!window.confirm('确认要查看全部答案吗？')) {
+  if (!window.confirm(t('messages.showSolution'))) {
     return;
   }
 
@@ -77,7 +80,7 @@ function showSolution() {
       }
     }
   } else {
-    alert('无解，试着调整已填入的数值，或清空后再查看提示');
+    alert(t('messages.onSolution'));
   }
 
   usedTip.value = true;
@@ -86,7 +89,7 @@ function showSolution() {
 
 function startGame() {
   if (gameState.value === GameState.Playing) {
-    if (!window.confirm('确认要重新开始吗？')) {
+    if (!window.confirm(t('messages.restart'))) {
       return;
     }
   }
@@ -157,7 +160,7 @@ function playable() {
 window.addEventListener('beforeunload', (e: Event) => {
   if (gameState.value === GameState.Playing) {
     e.preventDefault();
-    return '游戏已经开始，确定要离开此页面吗？';
+    return t('messages.unload');
   }
 });
 
@@ -179,19 +182,25 @@ window.addEventListener('beforeunload', (e: Event) => {
     </main>
     <footer>
       <div class="tip-buttons">
-        <button @click="clearBoard" :disabled="!playable()">清空</button>
-        <button v-if="mode === GameMode.Casual" @click="showSolution" :disabled="!playable()">提示全部</button>
-        <button v-if="mode === GameMode.Casual" @click="showTip" :disabled="!playable()">提示</button>
+        <button @click="clearBoard" :disabled="!playable()">{{ t('buttons.clear') }}</button>
+        <button v-if="mode === GameMode.Casual" @click="showSolution" :disabled="!playable()">{{ t('buttons.showSolution') }}</button>
+        <button v-if="mode === GameMode.Casual" @click="showTip" :disabled="!playable()">{{ t('buttons.showTip') }}</button>
       </div>
       <div class="game-setting">
         <div class="setting-item">
-          <label>难度</label>
+          <label><img class="i18n-icon" src="/images/i18n.png" /></label>
+          <select v-model="$i18n.locale">
+            <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">{{ locale }}</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>{{ t('labels.difficulty') }}</label>
           <select v-model="difficulty">
             <option v-for="[label, value] in difficultyOptions" :value="value">{{ label }}</option>
           </select>
         </div>
         <div class="setting-item">
-          <label>模式</label>
+          <label>{{ t('labels.mode') }}</label>
           <select v-model="mode">
             <option v-for="[label, value] in modeOptions" :value="value">{{ label }}</option>
           </select>
@@ -199,7 +208,7 @@ window.addEventListener('beforeunload', (e: Event) => {
         <div v-show="mode === GameMode.Challenge" class="timer">
           <MsTimer ref="timer" />
         </div>
-        <button @click="startGame">重新开始</button>
+        <button @click="startGame">{{ t('buttons.restart') }}</button>
       </div>
     </footer>
   </div>
@@ -247,16 +256,19 @@ main {
 
 footer {
   flex: none;
-  height: 45px;
   border-top: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   background-color: #ffffff;
+  flex-wrap: wrap;
+  padding: 0 8px;
 }
 
 footer button {
   font-size: 14px;
   padding: 4px 8px;
+  flex: none;
+  margin: 4px;
 }
 
 .tip-buttons button {
@@ -267,10 +279,13 @@ footer button {
   display: flex;
   align-items: center;
   margin-left: auto;
+  flex-wrap: wrap;
 }
 
 .setting-item {
+  margin: 4px;
   margin-right: 14px;
+  flex: none;
 }
 
 .setting-item label {
@@ -288,5 +303,10 @@ footer button {
 
 .timer {
   margin-right: 8px;
+}
+
+.i18n-icon {
+  width: 22px;
+  vertical-align: middle;
 }
 </style>
